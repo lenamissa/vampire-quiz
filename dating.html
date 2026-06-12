@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Дневники вампира | Магистр Мистик Фоллс</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 10% 20%, #1a0b13, #0d0510);
+            font-family: 'Segoe UI', 'Garamond', 'Georgia', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* старинная бумажная текстура */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" opacity="0.06"><path fill="none" stroke="%23996677" stroke-width="0.5" d="M0 0 L400 0 M0 20 L400 20 M0 40 L400 40 M0 60 L400 60 M0 80 L400 80 M0 100 L400 100 M0 120 L400 120 M0 140 L400 140 M0 160 L400 160 M0 180 L400 180 M0 200 L400 200 M0 220 L400 220 M0 240 L400 240 M0 260 L400 260 M0 280 L400 280 M0 300 L400 300"/></svg>');
+            background-repeat: repeat;
+            pointer-events: none;
+        }
+
+        .quiz-container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(10, 5, 12, 0.8);
+            backdrop-filter: blur(14px);
+            border-radius: 70px;
+            padding: 1.6rem;
+            border: 1px solid #9b6a7c;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,200,0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            font-size: 1.9rem;
+            font-family: 'Georgia', serif;
+            text-align: center;
+            background: linear-gradient(135deg, #edd4c6, #b3819b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .vampire-icon {
+            font-size: 2rem;
+            text-align: center;
+            margin: 6px 0;
+            filter: drop-shadow(0 0 5px #ab6f8f);
+        }
+
+        .music-btn {
+            background: #36212b;
+            border: 1px solid #b87a97;
+            color: #f7e3d9;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .question-area {
+            margin: 20px 0;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #f3decf;
+            background: #21121b;
+            padding: 18px 15px;
+            border-radius: 50px;
+            border-left: 8px solid #c47a9e;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .opt-btn {
+            background: #221520;
+            border: 1px solid #ad6d8a;
+            color: #f7e3d9;
+            padding: 12px 16px;
+            border-radius: 60px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.1s;
+            font-family: inherit;
+        }
+
+        .opt-btn:active { transform: scale(0.97); background: #4d2b3b; }
+
+        .quote-card {
+            background: #2a1a25;
+            border-radius: 40px;
+            padding: 12px;
+            margin-top: 20px;
+            font-style: italic;
+            color: #e7c0cf;
+            font-size: 0.9rem;
+            border-left: 5px solid #c98faa;
+        }
+
+        .progress {
+            margin: 20px 0 10px;
+            display: flex;
+            justify-content: space-between;
+            color: #d9afbf;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #35222b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #db8bb0;
+            transition: width 0.3s;
+        }
+
+        .next-btn {
+            background: #9f5e7c;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #190d12;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 #4f2a3a;
+        }
+
+        .next-btn:active { transform: translateY(2px); }
+        .result-area { text-align: center; padding: 20px 0; }
+        .result-score { font-size: 2rem; font-weight: bold; color: #f9cf9f; }
+        .persona { font-size: 1.8rem; margin: 15px 0; }
+        .share-btn { background: #7b4b66; margin-top: 15px; }
+        footer { font-size: 0.65rem; text-align: center; margin-top: 20px; color: #a2748c; }
+    </style>
+</head>
+<body>
+<div class="quiz-container" id="quizApp">
+    <div class="vampire-icon">🩸 🦇 🧛‍♀️</div>
+    <h1>Тайны Мистик Фоллс</h1>
+    <div><button class="music-btn" id="musicToggle">🎵 Включить музыку</button></div>
+    <div id="questionBlock" class="question-area"></div>
+    <div class="progress">
+        <span id="questionCounter">Вопрос 1 из 14</span>
+        <span id="scoreCounter">❤️ 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div id="nextButtonDiv"></div>
+    <footer>✨ проверь свои знания о Дневниках вампира ✨</footer>
+</div>
+
+<script>
+    // ========== ВОПРОСЫ (исправленные) ==========
+    const questions = [
+        { text: "Кто превратил Елену Гилберт в вампира?", options: ["Стефан Сальваторе", "Деймон Сальваторе", "Кэтрин Пирс", "Клаус Майклсон"], correct: 0 },
+        { text: "Как звали лучшую подругу Елены в начале сериала?", options: ["Кэролайн Форбс", "Бонни Беннет", "Вики Донован", "Лекси Брансон"], correct: 1 },
+        { text: "Кто является гибридом (вампир + оборотень)?", options: ["Тайлер Локвуд", "Клаус Майклсон", "Мейсон Локвуд", "Кэтрин Пирс"], correct: 1 },
+        { text: "Какое прозвище чаще всего используют для Деймона?", options: ["Злой принц", "Король тьмы", "Плохой мальчик", "Сексуальный злодей"], correct: 2 },
+        { text: "Кто такая Кэтрин Пирс?", options: ["Первый вампир", "Прародительница Сальваторе", "Двойник Елены", "Всё верно"], correct: 3 },
+        { text: "Кто косвенно виноват в аварии родителей Елены?", options: ["Клаус", "Мэтт Донован", "Стефан", "Деймон"], correct: 0 },
+        { text: "Биологический отец Аларика?", options: ["Джон Гилберт", "Клаус", "Майкл", "Неизвестен"], correct: 0 },
+        { text: "Как Деймон ласково называл Елену?", options: ["Любимая", "Маленькая Гилберт", "Ангел", "Сладкая"], correct: 1 },
+        { text: "Кто создала вампиров?", options: ["Эстер", "Ки Цин", "Бонни", "Сибил"], correct: 0 },
+        { text: "Первая любовь Стефана?", options: ["Кэтрин Пирс", "Валери Тюль", "Елена", "Кэролайн"], correct: 0 },
+        { text: "Что убивает первобытного вампира?", options: ["Дневник", "Белый дуб", "Кинжал с вербеной", "Астральная сфера"], correct: 1 },
+        { text: "Дочь Клауса?", options: ["Хоуп", "Элизабет", "Изабель", "Эстер"], correct: 0 },
+        { text: "Кольцо Сальваторе даёт?", options: ["Бессмертие", "Защиту от солнца", "Контроль разума", "Печать"], correct: 1 },
+        { text: "Кто сказал 'I was feeling epic'?", options: ["Деймон", "Елена", "Стефан", "Кэролайн"], correct: 1 }
+    ];
+
+    // Цитаты из сериала (для каждого вопроса после ответа)
+    const quotes = [
+        "🩸 «Ты — моя слабость, Елена.» — Деймон",
+        "🖤 «Наша любовь сильнее всего.» — Стефан",
+        "🌙 «I will love you until my last dying breath.» — Деймон",
+        "🕯️ «Бессмертие — не вечность без тебя.» — Клаус",
+        "📖 «Ты не просто дневник, ты — моя душа.» — Елена",
+        "🍷 «Я плохой, но с тобой хочу быть лучше.» — Деймон",
+        "🔥 «Семья превыше всего.» — Клаус",
+        "🖤 «Привет, брат.» — Деймон",
+        "💀 «Я не монстр, я — тот, кто выжил.» — Кэтрин",
+        "⭐ «Самая эпическая любовная история.» — Елена",
+        "🌑 «Тьма всегда притягивает свет.» — Стефан",
+        "🩸 «Бойся не вампира, бойся своих желаний.» — Клаус",
+        "⚜️ «Сила в крови, мудрость в прощении.» — Эстер",
+        "🖤 «Я бы выбрал тебя снова и снова.» — Деймон"
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let userAnswers = new Array(14).fill(null);
+    let questionAnswered = false;
+    let selectedQuote = "";
+
+    // Telegram
+    const BOT_TOKEN = '8679437849:AAEGpIlKWxDa59WcI4cFOt8vQ1hRfRmL-DU';
+    const CHAT_ID = 1489485639;
+    async function sendToTelegram(msg) {
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: 'HTML' })
+            });
+        } catch(e) {}
+    }
+
+    // Музыка (опционально)
+    let audio = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3");
+    audio.loop = true;
+    let musicPlaying = false;
+    document.getElementById("musicToggle").addEventListener("click", () => {
+        if (!musicPlaying) {
+            audio.play().catch(e => console.log("Авто-запрет"));
+            musicPlaying = true;
+            document.getElementById("musicToggle").innerText = "🔇 Выключить музыку";
+        } else {
+            audio.pause();
+            musicPlaying = false;
+            document.getElementById("musicToggle").innerText = "🎵 Включить музыку";
+        }
+    });
+
+    function updateProgress() {
+        document.getElementById("questionCounter").innerText = `Вопрос ${currentIndex+1} из 14`;
+        document.getElementById("scoreCounter").innerHTML = `❤️ ${score}`;
+        document.getElementById("progressFill").style.width = ((currentIndex)/14)*100 + "%";
+    }
+
+    function showCharacter(scoreVal) {
+        if (scoreVal >= 13) return "🧛‍♂️ Клаус Майклсон — первобытный король";
+        if (scoreVal >= 10) return "🥃 Деймон Сальваторе — плохой мальчик с душой";
+        if (scoreVal >= 7) return "📖 Елена Гилберт — сердце сериала";
+        if (scoreVal >= 4) return "🏈 Мэтт Донован — простой смертный, но живой";
+        return "🧛‍♀️ Вампир-новичок — пересмотрите сериал!";
+    }
+
+    function renderQuestion() {
+        const q = questions[currentIndex];
+        const container = document.getElementById("questionBlock");
+        container.innerHTML = `
+            <div class="question-text">❓ ${q.text}</div>
+            <div class="options" id="optionsContainer">
+                ${q.options.map((opt, idx) => `<button class="opt-btn" data-opt-index="${idx}">${String.fromCharCode(65+idx)}. ${opt}</button>`).join('')}
+            </div>
+            <div id="quoteSpot" class="quote-card" style="display:none;"></div>
+        `;
+        document.querySelectorAll('.opt-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (questionAnswered) return;
+                const idx = parseInt(btn.dataset.optIndex);
+                const isCorrect = (idx === q.correct);
+                if (isCorrect) {
+                    if (userAnswers[currentIndex] === null) score++;
+                    userAnswers[currentIndex] = idx;
+                    btn.style.background = "#6d3f5a";
+                    score = Math.min(14, score);
+                    updateProgress();
+                } else {
+                    userAnswers[currentIndex] = idx;
+                    btn.style.background = "#591c36";
+                    updateProgress();
+                }
+                document.querySelectorAll('.opt-btn').forEach((b, i) => {
+                    if (i === q.correct) b.style.background = "#456c5a";
+                });
+                questionAnswered = true;
+                selectedQuote = quotes[currentIndex % quotes.length];
+                const quoteDiv = document.getElementById("quoteSpot");
+                quoteDiv.innerHTML = `🩸 ${selectedQuote} 🩸`;
+                quoteDiv.style.display = "block";
+            });
+        });
+    }
+
+    function showFinalResult() {
+        const total = 14;
+        const persona = showCharacter(score);
+        const container = document.getElementById("questionBlock");
+        container.innerHTML = `
+            <div class="result-area">
+                <div class="result-score">🩸 ${score} / 14 🩸</div>
+                <div class="persona">✨ Ты — ${persona} ✨</div>
+                <div class="quote-card">${quotes[Math.floor(Math.random()*quotes.length)]}</div>
+                <button class="next-btn share-btn" id="shareTG">📤 Поделиться результатом в Telegram</button>
+                <button class="next-btn restart" id="restartQuiz">🔄 Перезапустить викторину</button>
+            </div>
+        `;
+        document.getElementById("restartQuiz")?.addEventListener("click", () => location.reload());
+        document.getElementById("shareTG")?.addEventListener("click", () => {
+            const msg = `🦇 Викторина «Дневники вампира»\nМой результат: ${score}/14\nПерсонаж: ${persona}\nПопробуй и ты! https://lenamissa.github.io/vampire-quiz/`;
+            sendToTelegram(msg);
+            alert("Результат отправлен в Telegram-чат с ботом!");
+        });
+        // Отправляем результат в тг автоматически
+        sendToTelegram(`🎓 Итог викторины: ${score}/14. ${persona}`);
+    }
+
+    function nextQuestion() {
+        if (!questionAnswered) {
+            alert("Выбери ответ, прежде чем продолжить!");
+            return;
+        }
+        if (currentIndex + 1 < 14) {
+            currentIndex++;
+            questionAnswered = false;
+            renderQuestion();
+            updateProgress();
+        } else {
+            showFinalResult();
+        }
+    }
+
+    function init() {
+        currentIndex = 0; score = 0; userAnswers.fill(null); questionAnswered = false;
+        renderQuestion(); updateProgress();
+        const nextDiv = document.getElementById("nextButtonDiv");
+        nextDiv.innerHTML = `<button class="next-btn" id="nextBtn">🕯️ Дальше → Мистик Фоллс 🕯️</button>`;
+        document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+    }
+    init();
+</script>
+</body>
+</html>
